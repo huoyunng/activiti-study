@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +67,6 @@ public class ProcessTestDelegateTask {
 		assertNotNull(task);
 		assertEquals("user1", task.getAssignee());
 		assertEquals("user1", task.getOwner());
-		//		taskService.complete(task.getId(), Collections.singletonMap("taskTwoAssignee", "user2"));
+		//taskService.complete(task.getId(), Collections.singletonMap("taskTwoAssignee", "user2"));
 	}
 }

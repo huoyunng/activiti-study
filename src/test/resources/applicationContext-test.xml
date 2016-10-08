@@ -3,9 +3,22 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jee="http://www.springframework.org/schema/jee"
 	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.1.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd"
-	default-lazy-init="true">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd 
+						http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.1.xsd 
+						http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd 
+						http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd 
+						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd"
+				default-lazy-init="true">
 
+	<!-- 初始化数据表结构  需要在xsi:schemaLocation 引入-->
+	<!-- http://www.springframework.org/schema/jdbc-->
+    <!-- http://www.springframework.org/schema/jdbc/spring-jdbc-3.2.xsd -->
+    <jdbc:initialize-database data-source="dataSource" ignore-failures="ALL" enabled="${jdbc.initializedatabase}">
+        <jdbc:script location="classpath:database/h2/create-table.sql" />
+        <jdbc:script location="classpath:database/h2/import-data.sql" />
+    </jdbc:initialize-database>
+    
 	<context:component-scan base-package="me.kafeitu.activiti.listener" />
 
 	<bean id="dataSource"
@@ -15,6 +28,29 @@
 		<property name="username" value="sa" />
 		<property name="password" value="" />
 	</bean>
+	
+<!-- 	H2 Database 数据源配置    注：密码不要留空（可以根据需要修改成其它值），否则运行时会报" 用户名、密码错之类"的Error-->
+<!-- 	<bean id="dataSource" class="org.h2.jdbcx.JdbcConnectionPool" -->
+<!--         destroy-method="dispose"> -->
+<!--         <constructor-arg> -->
+<!--             <bean class="org.h2.jdbcx.JdbcDataSource"> -->
+<!--                 内存模式 -->
+<!--                 <property name="URL" value="jdbc:h2:mem:test" /> -->
+<!--                 文件模式 -->
+<!--                 <property name="URL" value="jdbc:h2:testRestDB" />                  -->
+<!--                 <property name="user" value="sa" /> -->
+<!--                 <property name="password" value="sa" /> -->
+<!--             </bean> -->
+<!--         </constructor-arg> -->
+<!--     </bean> -->
+
+	<bean id="propertyPlaceholder" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:db.properties</value>
+			</list>
+		</property>
+	</bean>
 
 	<bean id="transactionManager"
 		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -23,6 +59,7 @@
 	<tx:annotation-driven transaction-manager="transactionManager"
 		proxy-target-class="true" />
 
+	<!-- 加载activiti引擎 -->
 	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
 		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="transactionManager" />
@@ -42,6 +79,7 @@
 		<property name="processEngineConfiguration" ref="processEngineConfiguration" />
 	</bean>
 
+	<!-- activiti的各种服务接口 -->
 	<bean id="repositoryService" factory-bean="processEngineFactory"
 		factory-method="getRepositoryService" />
 	<bean id="runtimeService" factory-bean="processEngineFactory"

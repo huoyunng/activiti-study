@@ -19,18 +19,49 @@
 	http://www.springframework.org/schema/util		http://www.springframework.org/schema/util/spring-util-3.2.xsd"
 	default-lazy-init="false">
 
-	<jdbc:embedded-database id="activitiDataSource" type="H2" />
+<!-- 	<jdbc:embedded-database id="activitiDataSource" type="H2"/> -->
+
+<!-- 	<bean id="activitiTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"> -->
+<!-- 		<property name="dataSource" ref="activitiDataSource" /> -->
+<!-- 	</bean> -->
+	
+	<bean id="propertyPlaceholder" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:db.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClassName}" />
+		<property name="jdbcUrl" value="${jdbc.url}" />
+		<property name="user" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="minPoolSize" value="${jdbc.minPoolSize}" />
+		<property name="maxPoolSize" value="${jdbc.maxPoolSize}" />
+		<property name="maxIdleTime" value="${jdbc.maxIdleTime}" />
+		<property name="acquireIncrement" value="${jdbc.acquireIncrement}" />
+		<property name="maxStatements" value="${jdbc.maxStatements}" />
+		<property name="initialPoolSize" value="${jdbc.initialPoolSize}" />
+		<property name="idleConnectionTestPeriod" value="${jdbc.idleConnectionTestPeriod}" />
+		<property name="acquireRetryAttempts" value="${jdbc.acquireRetryAttempts}" />
+		<property name="breakAfterAcquireFailure" value="${jdbc.breakAfterAcquireFailure}" />
+		<property name="testConnectionOnCheckout" value="${jdbc.testConnectionOnCheckout}" />
+	</bean>
 
 	<bean id="activitiTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="activitiDataSource" />
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 
 	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
-		<property name="dataSource" ref="activitiDataSource" />
+		<property name="dataSource" ref="dataSource" />
 		<property name="transactionManager" ref="activitiTransactionManager" />
-		<property name="databaseSchemaUpdate" value="true" />
-		<property name="jobExecutorActivate" value="true" />
-		<property name="deploymentResources" value="classpath*:/qun/innocent.y/test.bpmn" />
+		<property name="databaseSchemaUpdate" value="true" />  <!--value="true" or value="create-drop" (use create-drop for testing only!) -->
+		<!-- 开启JOB引擎 -->
+		<property name="jobExecutorActivate" value="false" />
+		<property name="deploymentResources" value="classpath*:diagrams/qun/innocent.y/*.bpmn" />
 	</bean>
 
 	<bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
@@ -42,6 +73,7 @@
 	<bean id="taskService" factory-bean="processEngine" factory-method="getTaskService" />
 	<bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService" />
 	<bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
+	<bean id="identityService" factory-bean="processEngine" factory-method="getIdentityService" />
 
 	<bean id="activitiRule" class="org.activiti.engine.test.ActivitiRule">
 		<property name="processEngine" ref="processEngine" />

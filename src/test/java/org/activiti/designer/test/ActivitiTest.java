@@ -19,16 +19,17 @@ public class ActivitiTest {
     @Rule
     @Autowired
     public ActivitiRule activitiRule;
+
+    int flag = 0;
     
     @Test
     public void test() {
         runtimeService.startProcessInstanceByKey("testProcess");
-        
         new Thread(new Runnable() {
             
             @Override
             public void run() {
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < 1; i++) {
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {
@@ -39,6 +40,7 @@ public class ActivitiTest {
                     System.out.println("trigger event test01");
                     runtimeService.signalEventReceived("test01");
 //                    runtimeService.signalEventReceivedAsync("test01");
+                    flag += 1;
                 }
                 
             }
@@ -48,7 +50,7 @@ public class ActivitiTest {
             
             @Override
             public void run() {
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < 1; i++) {
                     try {
                         Thread.sleep(10);
                     } catch (InterruptedException e) {
@@ -68,6 +70,9 @@ public class ActivitiTest {
             try {
                 Thread.sleep(1000);
                 System.out.println("sleep");
+                if (flag > 0){
+                	loop = false;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
